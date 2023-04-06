@@ -53,9 +53,11 @@ scatter = ax1.scatter('voltage', 'current', data=data_dict1, color='mediumseagre
 annotations = []
 for x, y in zip(voltage, current_abs):
     if x in [-2.0, -1.5, -1, -0.5]:
-        ann = ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(0.5, -20), textcoords='offset points', ha='center', fontsize=8)
+        ann = ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(0.5, -20), textcoords='offset points', ha='center',
+                           fontsize=8)
     else:
-        ann = ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(0.5, 10), textcoords='offset points', ha='center', fontsize=8)
+        ann = ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(0.5, 10), textcoords='offset points', ha='center',
+                           fontsize=8)
     annotations.append(ann)
 
 ax1.scatter(None, None, label=f"R² = {calc_R_squared()}")
@@ -76,7 +78,7 @@ a = 0
 # Extract Wavelength and dB data
 for measurement in root.iter('WavelengthSweep'):
     # choose a color for the scatter plot based on the iteration index
-    color = cmap(a/7)
+    color = cmap(a / 7)
     # get data from each element
     Wavelength_data = measurement.find('L').text
     Measured_transmission_data = measurement.find('IL').text
