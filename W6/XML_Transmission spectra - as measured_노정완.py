@@ -37,7 +37,7 @@ def calc_R_squared():
     current_predicted_poly = np.polyval(fp, current_abs)
     residuals = current_abs - current_predicted_poly
     SSR = np.sum(residuals ** 2)
-    SST = np.sum((y - np.mean(y) ** 2))
+    SST = np.sum((current_abs - np.mean(current_abs) ** 2))
     return 1 - (SSR / SST)
 
 
