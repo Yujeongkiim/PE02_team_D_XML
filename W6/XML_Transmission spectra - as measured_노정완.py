@@ -32,10 +32,10 @@ data_dict1 = {'voltage': voltage, 'current': current_abs}
 
 
 # R-squared 구하기
-def calc_R_squared(x, y):
-    fp = np.polyfit(x, y, 12)
-    current_predicted_poly = np.polyval(fp, y)
-    residuals = y - current_predicted_poly
+def calc_R_squared():
+    fp = np.polyfit(voltage, current_abs, 12)
+    current_predicted_poly = np.polyval(fp, current_abs)
+    residuals = current_abs - current_predicted_poly
     SSR = np.sum(residuals ** 2)
     SST = np.sum((y - np.mean(y) ** 2))
     return 1 - (SSR / SST)
@@ -58,7 +58,7 @@ for x, y in zip(voltage, current_abs):
         ann = ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(0.5, 10), textcoords='offset points', ha='center', fontsize=8)
     annotations.append(ann)
 
-ax1.scatter(None, None, label=f"R² = {calc_R_squared(voltage, current_abs)}")
+ax1.scatter(None, None, label=f"R² = {calc_R_squared()}")
 ax1.set_yscale('log', base=10)
 ax1.set_xlabel('Voltage [V]', size=16, fontweight='bold')
 ax1.set_ylabel('Current [A]', size=16, fontweight='bold')
@@ -102,6 +102,6 @@ ax2.set_title('Transmission spectra - as measured', size=20, fontweight='bold', 
 
 ax2.tick_params(axis='both', which='major', size=14)  # tick 크기 설정
 ax2.grid()
-ax2.legend(loc='lower center', ncol=3, fontsize=18)
+ax2.legend(loc='lower center', ncol=3, fontsize=14)
 
 plt.show()
