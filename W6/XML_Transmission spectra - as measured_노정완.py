@@ -77,8 +77,8 @@ for wavelength_sweep in root.iter('WavelengthSweep'):
     wavelength_data['measured_transmission'].extend(measured_transmission)
     # Create a scatter plot using the data
     ax2.plot('wavelength', 'measured_transmission', data=wavelength_data, color=color,
-             label=wavelength_sweep.get('DCBias') + ' V' if wavelength_sweep != list(root.iter('WavelengthSweep'))[
-                 -1] else '')
+             label=wavelength_sweep.get('DCBias') + ' V'
+             if wavelength_sweep != list(root.iter('WavelengthSweep'))[-1] else '')
 
 # Handle graph details
 ax2.set_xlabel('Wavelength [nm]', size=16, fontweight='bold')
