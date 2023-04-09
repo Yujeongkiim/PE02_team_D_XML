@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Approach the path
-rootDir = "/Users/npowe/PycharmProjects/PE02_team_D_XML/data set/"  # Input your path
-WorkingDir = rootDir + 'HY202103_D07_(0,0)_LION1_DCM_LMZC.xml'  # Input file name
+rootDir = "../data set/"  # Input your path
+fname = 'HY202103_D07_(0,0)_LION1_DCM_LMZC.xml'  # Input file name
+WorkingDir = rootDir + fname
 
 # Parse XML file
 tree = elemTree.parse(WorkingDir)
