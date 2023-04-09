@@ -67,6 +67,7 @@ a = 0
 for wavelength_sweep in root.iter('WavelengthSweep'):
     # Choose a color for the scatter plot based on the iteration index
     color = cmap(a / 7)
+    a += 1
     # Make it a dict for easier handling
     wavelength_data = {'wavelength': [], 'measured_transmission': []}
     # Get data from each element
@@ -75,13 +76,9 @@ for wavelength_sweep in root.iter('WavelengthSweep'):
     wavelength_data['wavelength'].extend(wavelength)
     wavelength_data['measured_transmission'].extend(measured_transmission)
     # Create a scatter plot using the data
-    if wavelength_sweep != list(root.iter('WavelengthSweep'))[-1]:
-        ax2.plot('wavelength', 'measured_transmission', data=wavelength_data, color=color,
-                 label=wavelength_sweep.get('DCBias') + ' V')
-    else:
-        ax2.plot('wavelength', 'measured_transmission', data=wavelength_data, color=color, label='')
-    # Increase the color index
-    a += 1
+    ax2.plot('wavelength', 'measured_transmission', data=wavelength_data, color=color,
+             label=wavelength_sweep.get('DCBias') + ' V' if wavelength_sweep != list(root.iter('WavelengthSweep'))[
+                 -1] else '')
 
 # Handle graph details
 ax2.set_xlabel('Wavelength [nm]', size=16, fontweight='bold')
