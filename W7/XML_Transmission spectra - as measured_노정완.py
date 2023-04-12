@@ -51,7 +51,6 @@ def calc_R_squared(x_set, y_set):
 # Plot data using matplotlib
 ax1.scatter('voltage', 'current', data=iv_data, color='mediumseagreen', label='data')
 ax1.plot(iv_data['voltage'], f(iv_data['voltage']), linestyle='--', lw=2, color='r', label='best-fit')
-
 # Add annotations for current values and R-squared value
 for x, y in zip(iv_data['voltage'], iv_data['current']):
     if x in [-2.0, -1.0, 1.0]:
@@ -60,8 +59,7 @@ ax1.annotate(f"R² = {calc_R_squared(voltage, current_abs):2f}", xy=(-2.1, 10 **
 
 # Graph 2
 # Handle label color
-cmap = plt.cm.get_cmap('jet')
-a = 0
+cmap, a = plt.cm.get_cmap('jet'), 0
 # Extract Wavelength and dB data
 for wavelength_sweep in root.iter('WavelengthSweep'):
     # Choose a color for the scatter plot based on the iteration index
@@ -80,6 +78,10 @@ for wavelength_sweep in root.iter('WavelengthSweep'):
              if wavelength_sweep != list(root.iter('WavelengthSweep'))[-1] else '')
 
 # Graph 3
+# Ignore RankWarning from numpy.polyfit()
+import warnings
+warnings.filterwarnings('ignore', message='Polyfit may be poorly conditioned', category=np.RankWarning)
+
 ax3.plot('wavelength', 'measured_transmission', data=wavelength_data, label='')
 for i in range(1, 9):
     fp = np.polyfit(wavelength_data['wavelength'], wavelength_data['measured_transmission'], i)
