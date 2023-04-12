@@ -84,9 +84,10 @@ warnings.filterwarnings('ignore', message='Polyfit may be poorly conditioned', c
 
 ax3.plot('wavelength', 'measured_transmission', data=wavelength_data, label='')
 for i in range(1, 9):
+    color = cmap(i / 9)
     fp = np.polyfit(wavelength_data['wavelength'], wavelength_data['measured_transmission'], i)
     f = np.poly1d(fp)
-    ax3.plot(wavelength_data['wavelength'], f(wavelength_data['wavelength']), label=f'{i}th')
+    ax3.plot(wavelength_data['wavelength'], f(wavelength_data['wavelength']), color=color, lw=0.8, label=f'{i}th')
     ax3.annotate(f"R² = {calc_R_squared(wavelength_data['wavelength'], wavelength_data['measured_transmission'])}",
                  xy=(1580.7, -17 + i), ha='left', fontsize=8)
 
