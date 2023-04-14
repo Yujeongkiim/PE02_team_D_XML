@@ -1,6 +1,8 @@
 import xml.etree.ElementTree as elemTree
 import matplotlib.pyplot as plt
 import numpy as np
+from lmfit import Model
+from sklearn.metrics import r2_score
 
 # Approach the path
 rootDir = "../data set/"  # Input your path
@@ -22,11 +24,9 @@ for axs in axs.flatten():
     if axs not in [ax1, ax2, ax3]:
         axs.axis('off')
 
-# Graph 1
-# Initialize data containers
-iv_data = {'voltage': [], 'current': []}
-
+# Graph 1: I-V curve
 # Extract current and voltage data
+iv_data = {'voltage': [], 'current': []}
 for iv_measurement in root.iter('IVMeasurement'):
     current = list(map(float, iv_measurement.find('Current').text.split(',')))
     voltage = list(map(float, iv_measurement.find('Voltage').text.split(',')))
@@ -34,32 +34,39 @@ for iv_measurement in root.iter('IVMeasurement'):
     iv_data['voltage'].extend(voltage)
     iv_data['current'].extend(current_abs)
 
-# Poly1d, numpy (np.poly1d)로 근사치 매기는 fitting
-fp = np.polyfit(iv_data['voltage'], iv_data['current'], 12)
-f = np.poly1d(fp)
+I_s=iv_data['current'][0]
+# Threshold voltage 기준으로 구간 설정
+x_bef_Vth, x_aft_Vth = iv_data['voltage'][:10], iv_data['voltage'][9:]
+y_bef_Vth, y_aft_Vth = iv_data['current'][:10], iv_data['current'][9:]
+# Threshold voltage 이전
+fp = np.polyfit(x_bef_Vth, y_bef_Vth, 7) # Data point가 9개 이므로 7차까지 해야 근사에 의미가 있음
+f = np.poly1d(fp) # Equation으로 만듬
 
+# IV data 근사하는 함수
+def fit_IV(voltage, I_s, q, nkT):
+    return I_s * (np.exp(q * voltage / nkT ) - 1)
 
-# R-squared 구하기
-def calc_R_squared(x_set, y_set):
-    y_predicted_poly = np.polyval(fp, x_set)
-    residuals = y_set - y_predicted_poly
-    SSR = np.sum(residuals ** 2)
-    SST = np.sum((y_set - np.mean(y_set)) ** 2)
-    return 1 - (SSR / SST)
-
+# Threshold voltage 이후
+model = Model(fit_IV)
+params = model.make_params(I_s=I_s, q=1, nkT=1)
+# fit the model to the data
+result = model.fit(y_aft_Vth, params, voltage=x_aft_Vth)
+y_fit = list(f(x_bef_Vth))
+y_fit.extend(result.best_fit[1:])
+residuals = np.subtract(current_abs, y_fit)
 
 # Plot data using matplotlib
 ax1.scatter('voltage', 'current', data=iv_data, color='mediumseagreen', label='data')
-ax1.plot(iv_data['voltage'], f(iv_data['voltage']), linestyle='--', lw=2, color='r', label='best-fit')
+ax1.plot(voltage, y_fit, linestyle='--', lw=2, color='r', label='best-fit')
 # Add annotations for current values and R-squared value
 for x, y in zip(iv_data['voltage'], iv_data['current']):
     if x in [-2.0, -1.0, 1.0]:
         ax1.annotate(f"{y:.2e}A", xy=(x, y), xytext=(3, 10), textcoords='offset points', ha='center', fontsize=10)
-ax1.annotate(f"R² = {calc_R_squared(voltage, current_abs):2f}", xy=(-2.1, 10 ** -6), ha='left', fontsize=12)
+ax1.annotate(f"R² = {r2_score(current_abs, y_fit)}", xy=(-2.1, 10 ** -6), ha='left', fontsize=12)
 
 # Graph 2
 # Handle label color
-cmap, a = plt.cm.get_cmap('jet'), 0
+cmap, a = plt.colormaps.get_cmap('jet'), 0
 # Extract Wavelength and dB data
 for wavelength_sweep in root.iter('WavelengthSweep'):
     # Choose a color for the scatter plot based on the iteration index
@@ -82,14 +89,21 @@ for wavelength_sweep in root.iter('WavelengthSweep'):
 import warnings
 warnings.filterwarnings('ignore', message='Polyfit may be poorly conditioned', category=np.RankWarning)
 
+r2_list = []
+max_r2 = 0
 ax3.plot('wavelength', 'measured_transmission', data=wavelength_data, label='')
 for i in range(1, 9):
     color = cmap(i / 9)
     fp = np.polyfit(wavelength_data['wavelength'], wavelength_data['measured_transmission'], i)
     f = np.poly1d(fp)
+    r2 = r2_score(wavelength_data['measured_transmission'], f(wavelength_data['wavelength']))
+    r2_list.append(r2)
+    if r2_list[i-1] > max_r2:
+        max_r2 = r2
     ax3.plot(wavelength_data['wavelength'], f(wavelength_data['wavelength']), color=color, lw=0.8, label=f'{i}th')
-    ax3.annotate(f"R² = {calc_R_squared(wavelength_data['wavelength'], wavelength_data['measured_transmission'])}",
-                 xy=(1580.7, -17 + i), ha='left', fontsize=8)
+
+for i in range(8):
+    ax3.annotate(f"R² = {r2_list[i]}", xy=(1580.7, -16 + i), ha='left', fontsize=8, color='r' if r2_list[i] == max_r2 else None)
 
 detail_list = [
     {'ax1_title': 'IV - analysis', 'ax1_titlesize': 15,
